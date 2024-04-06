@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Home</title>
+    </head>
+    <body>
+        <%- include('./navbar') %>
+        <form action="/joinbycode" method="post">
+            <input type="text" name="code" placeholder="join by chat code" />
+            <button>Join with code</button>
+        </form>
+        <form action="/getaccesscode" method="post">
+            <button>Generate an access code</button>
+        </form>
+        <p><b>Code:</b> <%= code ? code : '' %></p>
+        <p><b>Name:</b> <span id="name"><%= name %></span></p>
+        <script>
+            function setName() {
+                const name = prompt("Enter your name");
+                if (name == "") {
+                    alert("give proper name");
+                    location.reload();
+                    return;
+                }
+                const postData = { name };
+                fetch("/setname", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(postData),
+                })
+                    .then((res) => {
+                        return res.json();
+                    })
+                    .then((res) => {
+                        document.getElementById("name").innerText = name;
+                        alert("name set to: " + postData.name);
+                        console.log(res);
+                    });
+            }
+            if (document.getElementById("name").innerText == "") setName();
+
+            function getQueryParam(param) {
+                const queryString = window.location.search;
+                const urlParams = new URLSearchParams(queryString);
+                return urlParams.get(param);
+            }
+            const msgParam = getQueryParam("msg");
+            if (msgParam == "roomcreated") {
+                alert("New room created");
+            } else if (msgParam == "roomthere") {
+                alert("You can join the room");
+            } else if (msgParam == "tablenotthere") {
+                alert("There is no room with that code");
+            } else if (msgParam == "noaccess") {
+                alert("you dont have access");
+            }
+        </script>
+    </body>
+</html>

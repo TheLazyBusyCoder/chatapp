@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CP: <%= name ? name: '' %></title>
+    </head>
+    <body>
+        <%- include('./navbar') %>
+        <h2>Room code: <%= code ? code : '' %></h2>
+
+        <!-- message sending div -->
+        <div>
+            <input type="text" id="msgbox" onkeypress="handleKeyPress(event)" />
+            <button id="send">send</button>
+        </div>
+        <!-- message div -->
+        <table id="msgdiv" border="true"></table>
+        <!-- script -->
+        <script>
+            const msgdiv = document.getElementById("msgdiv");
+            function handleKeyPress(event) {
+                if (event.keyCode === 13) {
+                    event.preventDefault(); // Prevent default form submission behavior
+                    sendMessage(document.getElementById("msgbox").value);
+                    document.getElementById("msgbox").value = "";
+                }
+            }
+            function getMessage() {
+                const postData = { code: "xyz" };
+                fetch("/getmsg", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(postData),
+                })
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error("Network response was not ok");
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        console.log("Response from server:", data);
+                        msgdiv.innerHTML = "<tr><td>sender</td><td>message</td><td>time</td</tr>" + data.html;
+                    })
+                    .catch((error) => {
+                        console.error("There was a problem with the fetch operation:", error);
+                    });
+            }
+
+            function sendMessage(msg) {
+                const postData = { msg };
+                fetch("/sendmsg", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(postData),
+                })
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error("Network response was not ok");
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        console.log("Response from server:", data);
+                    });
+            }
+            setInterval(() => {
+                getMessage();
+            }, 1000);
+            document.getElementById("send").addEventListener("click", (e) => {
+                sendMessage(document.getElementById("msgbox").value);
+                document.getElementById("msgbox").value = "";
+            });
+        </script>
+    </body>
+</html>
